@@ -5,6 +5,6 @@ Created on Wed Apr  5 11:31:34 2023
 @author: INNOVACION
 """
 
-API_KEY = "PKFJPGZD6L90JAN0HOUL"
-SECRET_KEY= "eNf0GCZnofxXuMLvjr84OA8g3U29fTO4imbxdLmF"
+API_KEY = "PKDC22OKIR928O8KVJAC"
+SECRET_KEY= "og60He689z8pYNhsCgaLhhuVlRhts4KseqVn95Cz"
 APCA_API_BASE_URL = "https://paper-api.alpaca.markets" # En caso de usar la versión de prueba de Alpaca

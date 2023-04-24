@@ -34,6 +34,7 @@ from alpaca.trading.stream import TradingStream
 
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockLatestQuoteRequest
+from alpaca.data.requests import StockLatestTradeRequest
 
 import config
 
@@ -92,7 +93,19 @@ class tradeAPIClass:
         for k,v in account.items():
             print(f"{k:30}{v}")
             
-        self.dataLog = StockHistoricalDataClient(config.API_KEY, config.SECRET_KEY)    
+        self.dataLog = StockHistoricalDataClient(config.API_KEY, config.SECRET_KEY)  
+        self.cartera202301=pd.DataFrame()
+        
+        #creamos la cartera si no existe
+        import os
+        name = 'cartera01'
+        file_path ="../reports/Cartera/"+name+".xlsx"
+       
+        if os.path.exists(file_path):
+            print("CARTERA existe.")
+        else:
+            print("El archivo no existe.")
+            self.crearCartera(name)   
         
         return
   
@@ -103,11 +116,11 @@ class tradeAPIClass:
         
         -------
         """
-        
+        #jj cambiar quotes por trades       
         # multi symbol request - single symbol is similar
-        multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=[instrumento_, "GLD"])
-        latest_multisymbol_quotes = self.dataLog.get_stock_latest_quote(multisymbol_request_params)        
-        latest_ask_price = latest_multisymbol_quotes[instrumento_].ask_price
+        multisymbol_request_params = StockLatestTradeRequest(symbol_or_symbols=[instrumento_, "GLD"])
+        latest_multisymbol_trades = self.dataLog.get_stock_latest_trade(multisymbol_request_params)        
+        latest_ask_price = latest_multisymbol_trades[instrumento_].price
                 
         # Obtener el estado del reloj de Alpaca
         clock = self.client.get_clock()
@@ -136,7 +149,11 @@ class tradeAPIClass:
             time_in_force = TimeInForce.DAY
         )
     
-        order = self.client.submit_order(order_data= order_details)        
+        order = self.client.submit_order(order_data= order_details)     
+        
+        # Añadir una nueva fila al 
+        nueva_fila = {'nombre': 'Ana', 'edad': 28}
+        df = df.append(nueva_fila, ignore_index=True)
 
         return order.id
 
@@ -168,9 +185,102 @@ class tradeAPIClass:
 
         return order.status
 
+    def positionExist(self, instrument_):
+        #comprobar si tengo una posicion con un instumento
+        try:
+            position= self.client.get_open_position(instrument_)            
+        except:
+            return (0)
+        return int(position.qty)
 
 
+    def moneyManag(self,instrument_, TP, SL):
+        """
+        Descripcion: funcion que aniza las acciones condidatas y con reglas
+        de moneyManagement decide cuantas comprar
+        
+        Si estoy dentro no comprar
+        Espectativa de ganar doble de la de perder
+        invertir un 10% de la cuenta /cash
+                
+        Returns
+        -------
+        -1 si no tenemos uqe comprar por los motivos X
+        'cantidad' de acciones a comprar
+        """
+        
+        #Si estoy dentro no entro más
+        cantidad = self.positionExist(instrument_)    
+        if (cantidad):
+            return -1
+        
+        cash=  self.getCash()
+        
+        ## CONDICIONES PARA ENTRAR
+        if (TP *1.0 < SL):
+            pass
+            #return -2
+        
+        #☻ calculo numero de acciones
+        quote,openMarket = self.getLastQuote(instrument_)
+        cantidad = int (((cash * 0.1)/quote))
+        
+        if ((cash *0.015) < (SL*cantidad)):
+            return -3
+        
+        return cantidad
+    
+    
+    def crearCartera(self, name):
+        """
+        Creo un DF con las posisciones y lo guardo en un Excel.
+        
+        """
+        columnas = ['asset', 'qty','buyPrice','buyDay', 'SL', 'TP', 'sellDay', 'sellPrice', 'reason']
+        df5 = pd.DataFrame(columns=columnas)
+        file_path ="../reports/Cartera/"+name+".xlsx"
+        df5.to_excel(file_path, 
+             index=True,
+             )
+   
+        return
+    
+    def leerCartera(self, name):
+        """
+       LLeo los datos de la cartera que tengo creada
+        
+        """
 
+        file_path ="../reports/Cartera/"+name+".xlsx"
+        
+        #hago una copia porsi
+        import shutil
+
+        shutil.copy2(file_path, "../reports/Cartera/cartera_back.xlsx")
+
+        self.cartera202301= pd.read_excel(file_path, index_col=0)
+    
+        return self.cartera202301
+
+    def actualizarCartera(self, name, nuevaPosicion):
+        """
+        Creo un DF con las posisciones y lo guardo en un Excel.
+        
+        """
+        self.leerCartera('cartera01')  
+        self.cartera202301 = alpacaAPI.cartera202301.append(nuevaPosicion, ignore_index=True)
+
+        file_path ="../reports/Cartera/"+name+".xlsx"
+        self.cartera202301.to_excel(file_path, 
+             index=True,
+             )
+
+        
+    
+        return   
+        
+
+        
     def analisis(self, instrumento, startDate, endDate, DF):
         """
         Descripcion: sample method
@@ -217,23 +327,58 @@ if __name__ == '__main__':
     if (sys.argv[1]== 'prod' ):
         print('Produccion')
         sys.exit()
+        
+
     
     #Llamamos al constructor de la Clase
     alpacaAPI= tradeAPIClass()
 
+    #creamos la cartera
+    #○alpacaAPI.crearCartera('cartera01')    
+    #alpacaAPI.leerCartera('cartera01')   
+    # Añadir una nueva fila al 
+    nuevaPosicion ={'asset':33, 'qty':2,'buyPrice':2,'buyDay':33, 'SL':4, 'TP':6, 'sellDay':4444, 'sellPrice':55, 'reason':'tp'}
+    #alpacaAPI.cartera202301 = alpacaAPI.cartera202301.append(nuevaPosicion, ignore_index=True)
+    alpacaAPI.actualizarCartera('cartera01', nuevaPosicion)
+
+
     #Obtener el dinero disponible
     cash=alpacaAPI.getCash() 
+    
+    #comprobar si tengo una posicion con un instumento
+
+    #position= alpacaAPI.client.get_open_position('SAN')
+    #print(position.qty)
+
+    cantidad = alpacaAPI.positionExist('san')    
+    
 
     #Obtener precio actual
     quote, marketOpen = alpacaAPI.getLastQuote("NXPI")
 
     #Poner una orden
-    orderID= alpacaAPI.placeOrder(instrument_='NXPI', quantity_=1)
+    #orderID= alpacaAPI.placeOrder(instrument_='NXPI', quantity_=1)
 
     #Chequear estado de la orden  
-    status= alpacaAPI.getOrderStatus(orderID)
+    #status= alpacaAPI.getOrderStatus(orderID)
+
+ 
+    #latest_trade = get_stock_latest_trade('AAPL')
 
 
+    
+    # Imprimir la información del último intercambio
+    #print(latest_trade)
+
+
+    # Voy a probar un funcion que recibe: instrumento, tp y SL
+    # devolverá go_noGo, numero de acciones 
+    TP = 10
+    SL = 3
+    instrumento_ = 'ENPH'
+    
+    numAcciones= alpacaAPI.moneyManag(instrumento_, TP, SL)
+    
 
 
 
