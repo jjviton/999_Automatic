@@ -53,13 +53,17 @@ for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 logging.basicConfig(filename='../log/registro.log', level=logging.INFO ,force=True,
                     format='%(asctime)s:%(levelname)s:%(message)s')
-logging.warning('esto es una prueba')
+logging.warning('esto es una automatic.py')
 
 #### Variables globales  (refereniarlas con 'global' desde el codigo para actualizar)
 versionVersion = 0.1
 globalVar  = True
 
-
+file_path ="../../999_Automatic/reports/Cartera/cartera01.xlsx"
+"""
+name = 'cartera01'
+file_path ="../reports/Cartera/"+name+".xlsx"
+"""
 
 pdf_flag =True
 epochs_ =12
@@ -107,6 +111,7 @@ class tradeAPIClass:
             print("El archivo no existe.")
             self.crearCartera(name)   
         
+        self.señalBeep()
         return
   
     def getLastQuote(self, instrumento_="GLD"):
@@ -148,12 +153,17 @@ class tradeAPIClass:
             side = OrderSide.BUY,
             time_in_force = TimeInForce.DAY
         )
+
+        try:
+            order = self.client.submit_order(order_data= order_details)     
+        except:
+            logging.error('Error en PlaceOrder BUY %s', instrument_)
+
     
-        order = self.client.submit_order(order_data= order_details)     
+        #order = self.client.submit_order(order_data= order_details)     
         
-        # Añadir una nueva fila al 
-        nueva_fila = {'nombre': 'Ana', 'edad': 28}
-        df = df.append(nueva_fila, ignore_index=True)
+        
+        self.señalBeep()
 
         return order.id
 
@@ -251,7 +261,7 @@ class tradeAPIClass:
         
         """
 
-        file_path ="../reports/Cartera/"+name+".xlsx"
+        #file_path ="../reports/Cartera/"+name+".xlsx"
         
         #hago una copia porsi
         import shutil
@@ -260,7 +270,7 @@ class tradeAPIClass:
 
         self.cartera202301= pd.read_excel(file_path, index_col=0)
     
-        return self.cartera202301
+        return 
 
     def actualizarCartera(self, name, nuevaPosicion):
         """
@@ -268,9 +278,9 @@ class tradeAPIClass:
         
         """
         self.leerCartera('cartera01')  
-        self.cartera202301 = alpacaAPI.cartera202301.append(nuevaPosicion, ignore_index=True)
+        self.cartera202301 = self.cartera202301.append(nuevaPosicion, ignore_index=True)
 
-        file_path ="../reports/Cartera/"+name+".xlsx"
+        #file_path ="../reports/Cartera/"+name+".xlsx"
         self.cartera202301.to_excel(file_path, 
              index=True,
              )
@@ -278,7 +288,23 @@ class tradeAPIClass:
         
     
         return   
+    
+    def señalBeep(self):
+        import winsound
+        import time
         
+        # Define la frecuencia y duración de los pitidos
+        short_beep_freq = 1000 # Hz
+        long_beep_freq = 2000 # Hz
+        beep_duration = 100 # milisegundos
+        
+        # Genera la secuencia de pitidos
+        winsound.Beep(short_beep_freq, beep_duration) # Pitido corto
+        time.sleep(0.1) # Espera 0.1 segundos entre pitidos
+        winsound.Beep(short_beep_freq, beep_duration) # Pitido corto
+        time.sleep(0.2) # Espera 0.2 segundos entre pitidos
+        winsound.Beep(long_beep_freq, beep_duration*3) # Pitido largo
+                
 
         
     def analisis(self, instrumento, startDate, endDate, DF):
@@ -332,6 +358,8 @@ if __name__ == '__main__':
     
     #Llamamos al constructor de la Clase
     alpacaAPI= tradeAPIClass()
+    
+    alpacaAPI.señalBeep()
 
     #creamos la cartera
     #○alpacaAPI.crearCartera('cartera01')    
