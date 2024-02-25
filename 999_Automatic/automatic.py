@@ -17,6 +17,10 @@ Objetivo:
 
 Author: J3Viton
 
+
+Doc:
+    https://alpaca.markets/sdks/python/
+
 """
 
 # J3_DEBUG__ = False  #variable global (global J3_DEBUG__ )
@@ -40,7 +44,7 @@ import config
 
 
 import sys
-sys.path.insert(0,"C:\\Users\\INNOVACION\\Documents\\J3\\100.- cursos\\Quant_udemy\\programas\\Projects\\libreria")
+sys.path.insert(0,"C:\\Users\\jjjimenez\\Documents\\J3\\100.- cursos\\Quant_udemy\\programas\\Projects\\libreria")
 
 #Mis import
 import quant_j3_lib as quant_j
@@ -278,7 +282,7 @@ class tradeAPIClass:
         
         """
         self.leerCartera('cartera01')  
-        self.cartera202301 = self.cartera202301.append(nuevaPosicion, ignore_index=True)
+        self.cartera202301 = self.cartera202301._append(nuevaPosicion, ignore_index=True) #jjjjj
 
         #file_path ="../reports/Cartera/"+name+".xlsx"
         self.cartera202301.to_excel(file_path, 
@@ -408,8 +412,6 @@ if __name__ == '__main__':
     numAcciones= alpacaAPI.moneyManag(instrumento_, TP, SL)
     
 
-
-
     # search for crypto assets
     search_params = GetAssetsRequest(asset_class=AssetClass.CRYPTO)
     assets = alpacaAPI.client.get_all_assets(search_params)  
@@ -433,29 +435,37 @@ if __name__ == '__main__':
     
 
     
-    client = StockHistoricalDataClient(config.API_KEY, config.SECRET_KEY)
+    # client = StockHistoricalDataClient(config.API_KEY, config.SECRET_KEY)
     # multi symbol request - single symbol is similar
-    multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=["SPY", "GLD", "TLT"])
-    
-    latest_multisymbol_quotes = client.get_stock_latest_quote(multisymbol_request_params)
-    gld_latest_ask_price = latest_multisymbol_quotes["GLD"].ask_price
+    # multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=["SPY", "GLD", "TLT"])
+    # latest_multisymbol_quotes = client.get_stock_latest_quote(multisymbol_request_params)
+    # gld_latest_ask_price = latest_multisymbol_quotes["GLD"].ask_price
 
-
+    # 1. Enviar una orden de compra
+    buy_order_data = LimitOrderRequest(
+        symbol="AAPL",
+        limit_price=200,  # Precio de compra deseado
+        qty=10,  # Cantidad de acciones a comprar
+        side=OrderSide.BUY,
+        time_in_force=TimeInForce.DAY
+    )
+    
+    buy_order = alpacaAPI.client.submit_order(order_data=buy_order_data)
     
     
-    limit_order_data = LimitOrderRequest(
-                    symbol="BTC/USD",
-                    limit_price=17000,
-                    notional=4000,
-                    side=OrderSide.SELL,
-                    time_in_force=TimeInForce.FOK
-                   )
-
-    """# Limit order
-    limit_order = client.submit_order(
-                order_data=limit_order_data
-              )
-    """
+    # 2. Esperar a la ejecución de la orden de compra (puedes implementar lógica para monitorear el estado)
+    
+    # 3. Enviar una orden de venta limitada
+    sell_order_data = LimitOrderRequest(
+        symbol="INTC",
+        limit_price=45,  # Precio de venta deseado
+        qty=10,  # Cantidad de acciones a vender (igual a la cantidad comprada)
+        side=OrderSide.SELL,
+        time_in_force=TimeInForce.DAY
+    )
+    
+    sell_order = alpacaAPI.client.submit_order(order_data=sell_order_data)
+    
     
     # attempt to cancel all open orders
     #cancel_statuses = client.cancel_orders()
@@ -465,7 +475,7 @@ if __name__ == '__main__':
 
     #POSITIONS
    
-    pos= client.get_all_positions()  
+    #pos= client.get_all_positions()  
     
     #client.close_all_positions(cancel_orders=True)
 
