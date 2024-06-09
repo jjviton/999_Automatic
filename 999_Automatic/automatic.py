@@ -231,9 +231,11 @@ class tradeAPIClass:
         cash=  self.getCash()
         
         ## CONDICIONES PARA ENTRAR
-        if (TP *1.0 < SL):
+        
+        #En este caso no aplicamos aquí la estrategia, se calcula en la funion del backtesting
+        if (not(TP > SL*1.5)):
             pass
-            #return -2
+            #return (-1* (TP/SL))  #-2 
         
         #☻ calculo numero de acciones
         quote,openMarket = self.getLastQuote(instrument_)
@@ -241,6 +243,10 @@ class tradeAPIClass:
         
         if ((cash *0.015) < (SL*cantidad)):
             return -3
+        
+        #if((TP*100/quote)<6):   # beneficio menor que el 6%
+        #    return -4
+        #esto lo controlo con el valor 'expectancy' del Backtesting
         
         return cantidad
     
