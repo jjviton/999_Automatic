@@ -170,6 +170,44 @@ class tradeAPIClass:
         self.señalBeep()
 
         return order.id
+    
+    def placeBracketOrder(self, instrument_ ='AAPL', quantity_=1, TP_=2, SL_=1):
+
+        #Ponemos una orden
+        order_details = MarketOrderRequest(
+            symbol= instrument_,
+            qty = quantity_,
+            side = OrderSide.BUY,
+            time_in_force = TimeInForce.DAY,
+            order_class='bracket',
+            take_profit=dict(
+                limit_price=(TP_),
+            ),
+            stop_loss=dict(
+                stop_price=(SL_),
+            )
+        )
+
+        try:        
+            orden = self.client.submit_order(
+                order_data= order_details
+                )
+            
+            
+            
+            
+            print("Orden bracket (Stop Loss y Take Profit) realizada con éxito:")
+            print(orden)
+        except Exception as e:
+            print("Error al realizar la orden bracket:")
+            print(e)
+
+
+
+        
+        
+    
+    
 
     def getOrderStatus(self, orderID):
         """
@@ -447,6 +485,12 @@ if __name__ == '__main__':
     # latest_multisymbol_quotes = client.get_stock_latest_quote(multisymbol_request_params)
     # gld_latest_ask_price = latest_multisymbol_quotes["GLD"].ask_price
 
+    
+    # 1.- Enviar Orden de compra BRAKET sl y tp incluidos
+    
+    alpacaAPI.placeBracketOrder( instrument_ ='AAPL', quantity_=1, TP_=210.30, SL_=210.0)
+
+    """
     # 1. Enviar una orden de compra
     buy_order_data = LimitOrderRequest(
         symbol="AAPL",
@@ -457,6 +501,12 @@ if __name__ == '__main__':
     )
     
     buy_order = alpacaAPI.client.submit_order(order_data=buy_order_data)
+    """
+    
+
+    
+    
+    
     
     
     # 2. Esperar a la ejecución de la orden de compra (puedes implementar lógica para monitorear el estado)
