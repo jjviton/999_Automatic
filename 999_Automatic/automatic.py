@@ -174,11 +174,14 @@ class tradeAPIClass:
     def placeBracketOrder(self, instrument_ ='AAPL', quantity_=1, TP_=2, SL_=1):
 
         #Ponemos una orden
+        TP_ = round(TP_, 2)  #no podemos tener mas de dos decimales
+        SL_ = round(SL_, 2)
+        
         order_details = MarketOrderRequest(
             symbol= instrument_,
             qty = quantity_,
             side = OrderSide.BUY,
-            time_in_force = TimeInForce.DAY,
+            time_in_force = TimeInForce.GTC,
             order_class='bracket',
             take_profit=dict(
                 limit_price=(TP_),
@@ -354,7 +357,17 @@ class tradeAPIClass:
         winsound.Beep(long_beep_freq, beep_duration*3) # Pitido largo
                 
 
-        
+    def get_transactions(self, start_date, end_date):
+        # Convertir las fechas a objetos datetime
+        start_datetime = pd.Timestamp(start_date, tz='America/New_York')
+        end_datetime = pd.Timestamp(end_date, tz='America/New_York')
+
+        # Obtener todas las órdenes en el rango de fechas
+        orders = self.client.get_orders()
+
+        return orders
+
+    
     def analisis(self, instrumento, startDate, endDate, DF):
         """
         Descripcion: sample method
@@ -401,11 +414,57 @@ if __name__ == '__main__':
     if (sys.argv[1]== 'prod' ):
         print('Produccion')
         sys.exit()
-        
-
+     
     
     #Llamamos al constructor de la Clase
-    alpacaAPI= tradeAPIClass()
+    alpacaAPI= tradeAPIClass()        
+     
+    # bajar las transacciones
+    # Define el rango de fechas
+    start_date = '2023-01-01'
+    end_date = '2024-07-02'
+    # Llamada a la función
+    transactions = alpacaAPI.get_transactions(start_date, end_date)
+    
+    #convertimos la list a data frame
+    # Convertir la lista de órdenes a un DataFrame de pandas directamente
+    #df_orders = pd.DataFrame([transactions._raw for order in transactions])
+    
+    # Convertir la lista de órdenes a una lista de diccionarios
+    orders_data = []
+    for order in transactions:
+        orders_data.append({
+            'id': order.id,
+            'symbol': order.symbol,
+            'qty': order.qty,
+            'filled_qty': order.filled_qty,
+            'type': order.type,
+            'side': order.side,
+            'status': order.status,
+            'submitted_at': order.submitted_at,
+            'filled_at': order.filled_at,
+            'expired_at': order.expired_at,
+            'canceled_at': order.canceled_at,
+            'failed_at': order.failed_at,
+            'replaced_at': order.replaced_at,
+            'created_at': order.created_at,
+            'updated_at': order.updated_at,
+            'filled_avg_price': order.filled_avg_price
+        })
+
+    # Crear un DataFrame de pandas
+    df_orders = pd.DataFrame(orders_data)
+    
+    # Mostrar el DataFrame
+    print(df_orders)
+
+
+    # Imprime las transacciones obtenidas
+    for transaction in transactions:
+        print(transaction)
+        
+
+
     
     alpacaAPI.señalBeep()
 
