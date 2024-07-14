@@ -32,19 +32,15 @@ import numpy as np
 import yfinance as yf
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.enums import OrderSide, TimeInForce, AssetClass, QueryOrderStatus
-from alpaca.trading.requests import MarketOrderRequest,GetAssetsRequest,LimitOrderRequest,GetOrdersRequest
+from alpaca.trading.enums import OrderSide, TimeInForce,AssetClass
+from alpaca.trading.requests import MarketOrderRequest,GetAssetsRequest,LimitOrderRequest
 from alpaca.trading.stream import TradingStream
 
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockLatestQuoteRequest
 from alpaca.data.requests import StockLatestTradeRequest
 
-from datetime import datetime
-
 import config
-
-
 
 
 import sys
@@ -287,8 +283,7 @@ class tradeAPIClass:
         cantidad = int (((cash * 0.1)/quote))
         
         if ((cash *0.015) < (SL*cantidad)):
-            #return -3
-            pass
+            return -3
         
         #if((TP*100/quote)<6):   # beneficio menor que el 6%
         #    return -4
@@ -364,36 +359,15 @@ class tradeAPIClass:
 
     def get_transactions(self, start_date, end_date):
         # Convertir las fechas a objetos datetime
-        """start_datetime = pd.Timestamp(start_date, tz='America/New_York')
+        start_datetime = pd.Timestamp(start_date, tz='America/New_York')
         end_datetime = pd.Timestamp(end_date, tz='America/New_York')
-        """
-        start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
-        end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
-        
-        request_params = GetOrdersRequest(
-                            after = start_datetime,
-                            until = end_datetime,
-                            status=QueryOrderStatus.ALL,
-                            limit =500
-            )
-        
+
         # Obtener todas las órdenes en el rango de fechas
-        orders = self.client.get_orders(filter = request_params)
+        orders = self.client.get_orders()
 
         return orders
+
     
-    def anotar_excel_v2(self, ordersData, nombre_archivo):         
-        #datos guarda en cada iteracion del bucle los datos de cada transaccion
-        datos = ordersData
-        try:
-            with pd.ExcelWriter(nombre_archivo) as writer:
-                df = datos
-                df.to_excel(writer, sheet_name='Operaciones', index=False)
-
-            print(f"Datos escritos exitosamente en {nombre_archivo}")
-        except Exception as e:
-            print(f"Error al escribir en el archivo Excel: {e}")
-
     def analisis(self, instrumento, startDate, endDate, DF):
         """
         Descripcion: sample method
@@ -447,8 +421,8 @@ if __name__ == '__main__':
      
     # bajar las transacciones
     # Define el rango de fechas
-    start_date = '2020-01-01'
-    end_date = '2024-07-14'
+    start_date = '2023-01-01'
+    end_date = '2024-07-02'
     # Llamada a la función
     transactions = alpacaAPI.get_transactions(start_date, end_date)
     
@@ -467,15 +441,15 @@ if __name__ == '__main__':
             'type': order.type,
             'side': order.side,
             'status': order.status,
-            'submitted_at': str(order.submitted_at),
-            'filled_at': str(order.filled_at),
-            'expired_at': str(order.expired_at),
-            'canceled_at': str(order.canceled_at),
-            'failed_at': str(order.failed_at),
-            'replaced_at': str(order.replaced_at),
-            'created_at': str(order.created_at),
-            'updated_at': str(order.updated_at),
-            'filled_avg_price': str(order.filled_avg_price)
+            'submitted_at': order.submitted_at,
+            'filled_at': order.filled_at,
+            'expired_at': order.expired_at,
+            'canceled_at': order.canceled_at,
+            'failed_at': order.failed_at,
+            'replaced_at': order.replaced_at,
+            'created_at': order.created_at,
+            'updated_at': order.updated_at,
+            'filled_avg_price': order.filled_avg_price
         })
 
     # Crear un DataFrame de pandas
@@ -483,9 +457,7 @@ if __name__ == '__main__':
     
     # Mostrar el DataFrame
     print(df_orders)
-    #Imprimir datos en excel 
-    file_path2 ="../docs/"+"analisis_estra_01"+".xlsx"
-    alpacaAPI.anotar_excel_v2(df_orders, file_path2)
+
 
     # Imprime las transacciones obtenidas
     for transaction in transactions:
