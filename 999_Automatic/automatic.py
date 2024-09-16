@@ -48,7 +48,7 @@ import config
 
 
 import sys
-sys.path.insert(0,"C:\\Users\\jjjimenez\\Documents\\J3\\100.- cursos\\Quant_udemy\\programas\\Projects\\libreria")
+sys.path.insert(0,"C:\\Users\\INNOVACION\\Documents\\J3\\100.- cursos\\Quant_udemy\\programas\\Projects\\libreria")
 
 #Mis import
 import quant_j3_lib as quant_j
@@ -56,12 +56,15 @@ import quant_j3_lib as quant_j
 
 
 ####################### LOGGING
+
 import logging    #https://docs.python.org/3/library/logging.html
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
-logging.basicConfig(filename='../log/registro.log', level=logging.INFO ,force=True,
+logging.basicConfig(filename='C:\\Users\\INNOVACION\\Documents\\J3\\100.- cursos\\Quant_udemy\\programas\\Projects\\999_Automatic\\log\\registro_auto.log', 
+                    level=logging.WARNING ,force=True,
                     format='%(asctime)s:%(levelname)s:%(message)s')
-logging.warning('esto es una automatic.py')
+logging.warning('esto es una pruba automatic.py')
+
 
 #### Variables globales  (refereniarlas con 'global' desde el codigo para actualizar)
 versionVersion = 0.1
@@ -112,14 +115,18 @@ class tradeAPIClass:
         import os
         name = 'cartera01'
         file_path ="../reports/Cartera/"+name+".xlsx"
+        #file_path= "C:/Users/INNOVACION/Documents/J3/100.- cursos/Quant_udemy/programas/Projects/999_Automatic/reports/Cartera/" +name+ ".xlsx"
        
         if os.path.exists(file_path):
-            print("CARTERA existe.")
+            print("CARTERA existe...")
         else:
             print("El archivo no existe.")
             self.crearCartera(name)   
         
-        self.señalBeep()
+        self.senalBeep()
+        
+        #activarlog()
+        logging.warning('pasando por automatic.py')
         return
   
     def getLastQuote(self, instrumento_="GLD"):
@@ -171,7 +178,7 @@ class tradeAPIClass:
         #order = self.client.submit_order(order_data= order_details)     
         
         
-        self.señalBeep()
+        self.senalBeep()
 
         return order.id
     
@@ -208,6 +215,7 @@ class tradeAPIClass:
         except Exception as e:
             print("Error al realizar la orden bracket:")
             print(e)
+            logging.error(e)   
 
 
 
@@ -322,7 +330,7 @@ class tradeAPIClass:
         #hago una copia porsi
         import shutil
 
-        shutil.copy2(file_path, "../reports/Cartera/cartera_back.xlsx")
+        shutil.copy2(file_path, "cartera_back.xlsx")
 
         self.cartera202301= pd.read_excel(file_path, index_col=0)
     
@@ -345,7 +353,7 @@ class tradeAPIClass:
     
         return   
     
-    def señalBeep(self):
+    def senalBeep(self):
         import winsound
         import time
         
@@ -432,6 +440,8 @@ if __name__ == '__main__':
     https://alpaca.markets/docs/trading/paper-trading/
     https://alpaca.markets/docs/python-sdk/api_reference/trading/requests.html
 
+
+    incluimos ademas una parte de codigo en el main que hace un informe de las operaciones realizadas en un rangp
     
     """   
     print(sys.argv[1])   #se configura en 'run' 'configuration per file'
@@ -448,7 +458,7 @@ if __name__ == '__main__':
     # bajar las transacciones
     # Define el rango de fechas
     start_date = '2020-01-01'
-    end_date = '2024-07-14'
+    end_date = '2024-09-4'
     # Llamada a la función
     transactions = alpacaAPI.get_transactions(start_date, end_date)
     
@@ -490,16 +500,19 @@ if __name__ == '__main__':
     # Imprime las transacciones obtenidas
     for transaction in transactions:
         print(transaction)
-        
+
+
+
+    sys.exit()    #me salgo para no ejecutar el resto del codigo.        
 
 
     
-    alpacaAPI.señalBeep()
+    alpacaAPI.senalBeep()
 
     #creamos la cartera
     #○alpacaAPI.crearCartera('cartera01')    
     #alpacaAPI.leerCartera('cartera01')   
-    # Añadir una nueva fila al 
+    # Anadir una nueva fila al 
     nuevaPosicion ={'asset':33, 'qty':2,'buyPrice':2,'buyDay':33, 'SL':4, 'TP':6, 'sellDay':4444, 'sellPrice':55, 'reason':'tp'}
     #alpacaAPI.cartera202301 = alpacaAPI.cartera202301.append(nuevaPosicion, ignore_index=True)
     alpacaAPI.actualizarCartera('cartera01', nuevaPosicion)
