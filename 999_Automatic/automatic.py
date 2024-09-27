@@ -420,7 +420,110 @@ class tradeAPIClass:
    
         return
     
- 
+    def get_positions(self):
+        """
+        Descripcion: esta funcion crea una lista con las posiciones abiertas en Alpaca 
+        devolviendo un df con las posiciones y el pl
+        Parameters
+        ----------
+        beneficio : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+
+        """
+           
+        positions=self.client.get_all_positions()
+        
+        # Mostrar las posiciones abiertas
+        for position in positions:
+            print(f"Símbolo: {position.symbol}")
+            print(f"Cantidad: {position.qty}")
+            print(f"Precio Promedio: {position.avg_entry_price}")
+            print(f"Precio Actual: {position.current_price}")
+            print(f"Ganancia/Perdida No Realizada: {position.unrealized_pl}")
+            print("-" * 40)
+
+            
+        # Crear una lista de diccionarios con los datos de las posiciones
+        positions_data = []
+        for position in positions:
+            positions_data.append({
+                'symbol': position.symbol,
+                'qty': position.qty,
+                'avg_entry_price': position.avg_entry_price,
+                'current_price': position.current_price,
+                'unrealized_pl': position.unrealized_pl,
+                'unrealized_plpc': position.unrealized_plpc,
+                'unrealized_intraday_pl': position.unrealized_intraday_pl,
+                'unrealized_intraday_plpc': position.unrealized_intraday_plpc
+            })
+        
+        # Convertir la lista de diccionarios en un DataFrame de pandas
+        positions_df = pd.DataFrame(positions_data)
+
+        return positions_df
+    
+    def getExcelOrders(self, startDate= '2020-01-01', endDate= '2020-01-01'):
+        """
+        Descripcion: esta funcion crea una lista con las posiciones abiertas en Alpaca
+        Parameters
+        ----------
+        beneficio : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+
+        """
+
+        # Llamada a la función
+        transactions = alpacaAPI.get_transactions(start_date, end_date)
+        
+        #convertimos la list a data frame
+        # Convertir la lista de órdenes a un DataFrame de pandas directamente
+        #df_orders = pd.DataFrame([transactions._raw for order in transactions])
+        
+        # Convertir la lista de órdenes a una lista de diccionarios
+        orders_data = []
+        for order in transactions:
+            orders_data.append({
+                'id': order.id,
+                'symbol': order.symbol,
+                'qty': order.qty,
+                'filled_qty': order.filled_qty,
+                'type': order.type,
+                'side': order.side,
+                'status': order.status,
+                'submitted_at': str(order.submitted_at),
+                'filled_at': str(order.filled_at),
+                'expired_at': str(order.expired_at),
+                'canceled_at': str(order.canceled_at),
+                'failed_at': str(order.failed_at),
+                'replaced_at': str(order.replaced_at),
+                'created_at': str(order.created_at),
+                'updated_at': str(order.updated_at),
+                'filled_avg_price': str(order.filled_avg_price)
+            })
+
+        # Crear un DataFrame de pandas
+        df_orders = pd.DataFrame(orders_data)
+        
+        # Mostrar el DataFrame
+        print(df_orders)
+        #Imprimir datos en excel 
+        file_path2 ="../docs/"+"analisis_estra_01"+".xlsx"
+        alpacaAPI.anotar_excel_v2(df_orders, file_path2)
+
+        # Imprime las transacciones obtenidas
+        for transaction in transactions:
+            print(transaction)
+
+
+   
+        return    
+
     
 #################################################### Clase FIN
 
@@ -455,52 +558,11 @@ if __name__ == '__main__':
     #Llamamos al constructor de la Clase
     alpacaAPI= tradeAPIClass()        
      
-    # bajar las transacciones
-    # Define el rango de fechas
-    start_date = '2020-01-01'
-    end_date = '2024-09-4'
-    # Llamada a la función
-    transactions = alpacaAPI.get_transactions(start_date, end_date)
+    position= alpacaAPI.get_positions()
     
-    #convertimos la list a data frame
-    # Convertir la lista de órdenes a un DataFrame de pandas directamente
-    #df_orders = pd.DataFrame([transactions._raw for order in transactions])
-    
-    # Convertir la lista de órdenes a una lista de diccionarios
-    orders_data = []
-    for order in transactions:
-        orders_data.append({
-            'id': order.id,
-            'symbol': order.symbol,
-            'qty': order.qty,
-            'filled_qty': order.filled_qty,
-            'type': order.type,
-            'side': order.side,
-            'status': order.status,
-            'submitted_at': str(order.submitted_at),
-            'filled_at': str(order.filled_at),
-            'expired_at': str(order.expired_at),
-            'canceled_at': str(order.canceled_at),
-            'failed_at': str(order.failed_at),
-            'replaced_at': str(order.replaced_at),
-            'created_at': str(order.created_at),
-            'updated_at': str(order.updated_at),
-            'filled_avg_price': str(order.filled_avg_price)
-        })
-
-    # Crear un DataFrame de pandas
-    df_orders = pd.DataFrame(orders_data)
-    
-    # Mostrar el DataFrame
-    print(df_orders)
-    #Imprimir datos en excel 
-    file_path2 ="../docs/"+"analisis_estra_01"+".xlsx"
-    alpacaAPI.anotar_excel_v2(df_orders, file_path2)
-
-    # Imprime las transacciones obtenidas
-    for transaction in transactions:
-        print(transaction)
-
+    print (position.head())
+ 
+    alpacaAPI.getExcelOrders(startDate= '2020-01-01', endDate= '2020-09-20')
 
 
     sys.exit()    #me salgo para no ejecutar el resto del codigo.        
