@@ -30,6 +30,7 @@ Doc:
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import datetime as dt
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce, AssetClass, QueryOrderStatus
@@ -42,7 +43,7 @@ from alpaca.data.requests import StockLatestTradeRequest
 
 from datetime import datetime
 
-import config
+##  import config
 
 
 
@@ -86,8 +87,9 @@ epochs_ =12
 class tradeAPIClass:
 
     """CLASE para comunicarme con el broker Online y colocar ordenes.
-    
-       
+        en el parametro para2 meto la estrategia que identifica al Broker, cada 
+        estrategia corre en un broker
+               
     """  
     
     #Variable de CLASE
@@ -102,7 +104,14 @@ class tradeAPIClass:
         globalVar = True
         tradeAPIClass.flag01 =True
         
-        #Imprimimos la info de la cuenta
+        #Cargamos las claves dela cuenta e imprimimos la info de la cuenta
+        if (para2 == 00):
+            import config
+            config=config
+        elif (para2== 32):   
+            import configALBA
+            config=configALBA
+            
         self.client = TradingClient(config.API_KEY, config.SECRET_KEY, paper=True)
         account = dict(self.client.get_account())
         for k,v in account.items():
@@ -121,7 +130,7 @@ class tradeAPIClass:
             print("CARTERA existe...")
         else:
             print("El archivo no existe.")
-            self.crearCartera(name)   
+            #self.crearCartera(name)   
         
         self.senalBeep()
         
@@ -310,6 +319,8 @@ class tradeAPIClass:
         Creo un DF con las posisciones y lo guardo en un Excel.
         
         """
+        
+        
         columnas = ['asset', 'qty','buyPrice','buyDay', 'SL', 'TP', 'sellDay', 'sellPrice', 'reason']
         df5 = pd.DataFrame(columns=columnas)
         file_path ="../reports/Cartera/"+name+".xlsx"
@@ -324,6 +335,8 @@ class tradeAPIClass:
        LLeo los datos de la cartera que tengo creada
         
         """
+        
+        
 
         #file_path ="../reports/Cartera/"+name+".xlsx"
         
@@ -341,6 +354,9 @@ class tradeAPIClass:
         Creo un DF con las posisciones y lo guardo en un Excel.
         
         """
+        
+        return
+    
         self.leerCartera('cartera01')  
         self.cartera202301 = self.cartera202301._append(nuevaPosicion, ignore_index=True) #jjjjj
 
@@ -392,6 +408,8 @@ class tradeAPIClass:
     
     def anotar_excel_v2(self, ordersData, nombre_archivo):         
         #datos guarda en cada iteracion del bucle los datos de cada transaccion
+        
+      
         datos = ordersData
         try:
             with pd.ExcelWriter(nombre_archivo) as writer:
@@ -465,7 +483,7 @@ class tradeAPIClass:
 
         return positions_df
     
-    def getExcelOrders(self, startDate= '2020-01-01', endDate= '2020-01-01'):
+    def getExcelOrders(self, startDate= '2020-01-01', endDate= '2024-01-01'):
         """
         Descripcion: esta funcion crea una lista con las posiciones abiertas en Alpaca
         Parameters
@@ -479,7 +497,7 @@ class tradeAPIClass:
         """
 
         # Llamada a la función
-        transactions = alpacaAPI.get_transactions(start_date, end_date)
+        transactions = alpacaAPI.get_transactions(startDate, endDate)
         
         #convertimos la list a data frame
         # Convertir la lista de órdenes a un DataFrame de pandas directamente
@@ -513,7 +531,7 @@ class tradeAPIClass:
         # Mostrar el DataFrame
         print(df_orders)
         #Imprimir datos en excel 
-        file_path2 ="../docs/"+"analisis_estra_01"+".xlsx"
+        file_path2 ="../docs/"+"analisis_estra_01_v2"+".xlsx"
         alpacaAPI.anotar_excel_v2(df_orders, file_path2)
 
         # Imprime las transacciones obtenidas
@@ -523,9 +541,24 @@ class tradeAPIClass:
 
    
         return    
+    
+    def funcion_generar_excel(self):
+    
+       
+         
+        position= self.get_positions()
+        
+        print (position.head())
+        fechaFin_ = dt.datetime.today() 
+        
+        self.getExcelOrders(startDate= '2020-01-01', endDate='2024-12-12' ) #endDate= fechaFin_)    
+        return
 
     
 #################################################### Clase FIN
+
+
+
 
 
 
@@ -550,19 +583,25 @@ if __name__ == '__main__':
     print(sys.argv[1])   #se configura en 'run' 'configuration per file'
     print ('version(J): ',versionVersion) 
 
+
+    #Llamamos al constructor de la Clase
+    alpacaAPI= tradeAPIClass() 
+
     if (sys.argv[1]== 'prod' ):
         print('Produccion')
         sys.exit()
+         
+    if (sys.argv[1]== 'excel_1' ):
+        print('Genero excel')
+        alpacaAPI.funcion_generar_excel()
+        
+    print('nada')        
+    sys.exit()
      
-    
-    #Llamamos al constructor de la Clase
-    alpacaAPI= tradeAPIClass()        
+        
      
-    position= alpacaAPI.get_positions()
-    
-    print (position.head())
- 
-    alpacaAPI.getExcelOrders(startDate= '2020-01-01', endDate= '2020-09-20')
+        
+
 
 
     sys.exit()    #me salgo para no ejecutar el resto del codigo.        
