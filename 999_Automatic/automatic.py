@@ -57,7 +57,7 @@ import quant_j3_lib as quant_j
 
 
 ####################### LOGGING
-
+"""
 import logging    #https://docs.python.org/3/library/logging.html
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -65,7 +65,7 @@ logging.basicConfig(filename='C:\\Users\\INNOVACION\\Documents\\J3\\100.- cursos
                     level=logging.WARNING ,force=True,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 logging.warning('esto es una pruba automatic.py')
-
+"""
 
 #### Variables globales  (refereniarlas con 'global' desde el codigo para actualizar)
 versionVersion = 0.1
@@ -97,7 +97,7 @@ class tradeAPIClass:
     n_past = 14  # Number of past days we want to use to predict the future.  FILAS
     flag01 =0
    
-    def __init__(self, previson_a_x_days=4, Y_supervised_ = 'hull', para1=False, para2=1):
+    def __init__(self, previson_a_x_days=4, Y_supervised_ = 'hull', para1=False, para2=32):
         
         #Variable de INSTANCIA
         self.para_02 = para2   #variable de la instancia
@@ -106,8 +106,8 @@ class tradeAPIClass:
         
         #Cargamos las claves dela cuenta e imprimimos la info de la cuenta
         if (para2 == 00):
-            import config
-            config=config
+            import config_segunda_J3
+            config=config_segunda_J3
         elif (para2== 32):   
             import configALBA
             config=configALBA
@@ -135,7 +135,7 @@ class tradeAPIClass:
         self.senalBeep()
         
         #activarlog()
-        logging.warning('pasando por automatic.py')
+        #logging.warning('pasando por automatic.py')
         return
   
     def getLastQuote(self, instrumento_="GLD"):
@@ -181,7 +181,8 @@ class tradeAPIClass:
         try:
             order = self.client.submit_order(order_data= order_details)     
         except:
-            logging.error('Error en PlaceOrder BUY %s', instrument_)
+            #logging.error('Error en PlaceOrder BUY %s', instrument_)
+            pass
 
     
         #order = self.client.submit_order(order_data= order_details)     
@@ -224,7 +225,7 @@ class tradeAPIClass:
         except Exception as e:
             print("Error al realizar la orden bracket:")
             print(e)
-            logging.error(e)   
+            #logging.error(e)   
 
 
 
@@ -483,7 +484,7 @@ class tradeAPIClass:
 
         return positions_df
     
-    def getExcelOrders(self, startDate= '2020-01-01', endDate= '2024-01-01'):
+    def getExcelOrders(self, startDate= '2020-01-01', endDate= '2024-01-01', cuenta=00):
         """
         Descripcion: esta funcion crea una lista con las posiciones abiertas en Alpaca
         Parameters
@@ -531,7 +532,7 @@ class tradeAPIClass:
         # Mostrar el DataFrame
         print(df_orders)
         #Imprimir datos en excel 
-        file_path2 ="../docs/"+"analisis_estra_01_v2"+".xlsx"
+        file_path2 ="../docs/"+"analisis_estra_01_v2_" +str(cuenta)+ ".xlsx"
         alpacaAPI.anotar_excel_v2(df_orders, file_path2)
 
         # Imprime las transacciones obtenidas
@@ -542,7 +543,7 @@ class tradeAPIClass:
    
         return    
     
-    def funcion_generar_excel(self):
+    def funcion_generar_excel(self, cuenta=00):
     
        
          
@@ -551,7 +552,7 @@ class tradeAPIClass:
         print (position.head())
         fechaFin_ = dt.datetime.today() 
         
-        self.getExcelOrders(startDate= '2020-01-01', endDate='2024-12-12' ) #endDate= fechaFin_)    
+        self.getExcelOrders(startDate= '2020-01-01', endDate='2024-12-30', cuenta=cuenta ) #endDate= fechaFin_)    
         return
 
     
@@ -584,16 +585,22 @@ if __name__ == '__main__':
     print ('version(J): ',versionVersion) 
 
 
-    #Llamamos al constructor de la Clase
-    alpacaAPI= tradeAPIClass() 
 
-    if (sys.argv[1]== 'prod' ):
-        print('Produccion')
+
+    if (sys.argv[1]== 'excel_viton' ):
+        
+        #Llamamos al constructor de la Clase
+        alpacaAPI= tradeAPIClass(para2= 00) 
+        print('Viton')
+        alpacaAPI.funcion_generar_excel(cuenta =00)
         sys.exit()
          
-    if (sys.argv[1]== 'excel_1' ):
-        print('Genero excel')
-        alpacaAPI.funcion_generar_excel()
+    if (sys.argv[1]== 'excel_alba' ):
+        #Llamamos al constructor de la Clase
+        alpacaAPI= tradeAPIClass(para2= 32)
+        
+        print('Genero excel. Alba')
+        alpacaAPI.funcion_generar_excel(cuenta=32)
         
     print('nada')        
     sys.exit()
