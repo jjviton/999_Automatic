@@ -302,7 +302,7 @@ class tradeAPIClass:
         
         #☻ calculo numero de acciones
         quote,openMarket = self.getLastQuote(instrument_)
-        cantidad = int (((cash * 0.1)/quote))
+        cantidad = int (((cash * 0.01)/quote))
         
         if ((cash *0.015) < (SL*cantidad)):
             #return -3
@@ -585,8 +585,11 @@ if __name__ == '__main__':
     print ('version(J): ',versionVersion) 
 
 
-
-
+    """
+    Nota: esta parte del codigo es para la llamanda del orchestador visual para hacer los ficheros excel con las 
+    operaciones de la cuenta y poder analizarlas
+    """
+    
     if (sys.argv[1]== 'excel_viton' ):
         
         #Llamamos al constructor de la Clase
