@@ -108,3 +108,9 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# config
+999_Automatic/configALBA.py
+999_Automatic/config_segunda_J3.py
+999_Automatic/config.py
+

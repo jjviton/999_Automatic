@@ -22,6 +22,12 @@ Doc:
     https://alpaca.markets/sdks/python/
 
 """
+# Constantes
+CUENTA_J3_01 = 00
+CUENTA_J3_02 = 1
+
+CUENTA_ALBA_01 = 32
+CUENTA_ALBA_01 = 33
 
 # J3_DEBUG__ = False  #variable global (global J3_DEBUG__ )
 
@@ -111,6 +117,9 @@ class tradeAPIClass:
         elif (para2== 32):   
             import configALBA
             config=configALBA
+        
+        
+        self.configurarCuenta(cuentaID=para2)
             
         self.client = TradingClient(config.API_KEY, config.SECRET_KEY, paper=True)
         account = dict(self.client.get_account())
@@ -136,6 +145,22 @@ class tradeAPIClass:
         
         #activarlog()
         #logging.warning('pasando por automatic.py')
+        return
+    
+    def configurarCuenta(self, cuentaID):
+        """
+        Este metodo configura las cuenetas de test para probar hipotesis.
+        """
+        return
+    
+        #Cargamos las claves dela cuenta e imprimimos la info de la cuenta
+        if (cuentaID == CUENTA_J3_01):
+            import config_segunda_J3
+            config=config_segunda_J3
+        elif (cuentaID == CUENTA_ALBA_01):   
+            import configALBA
+            config=configALBA
+        
         return
   
     def getLastQuote(self, instrumento_="GLD"):
@@ -308,9 +333,16 @@ class tradeAPIClass:
             #return -3
             pass
         
+        if (cash < 0):  #No tengo pasta para comprar
+            return -99
+        
         #if((TP*100/quote)<6):   # beneficio menor que el 6%
         #    return -4
         #esto lo controlo con el valor 'expectancy' del Backtesting
+        
+        ################### PAra probar la estrategia compro solo 1, si no estoy dentro
+        cantidad =1
+        
         
         return cantidad
     
