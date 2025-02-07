@@ -241,10 +241,7 @@ class tradeAPIClass:
             orden = self.client.submit_order(
                 order_data= order_details
                 )
-            
-            
-            
-            
+        
             print("Orden bracket (Stop Loss y Take Profit) realizada con éxito:")
             print(orden)
         except Exception as e:
@@ -317,6 +314,10 @@ class tradeAPIClass:
             return -1
         
         cash=  self.getCash()
+
+        if (cash < 0):  #No tengo pasta para comprar
+            return -99
+
         
         ## CONDICIONES PARA ENTRAR
         
@@ -327,21 +328,20 @@ class tradeAPIClass:
         
         #☻ calculo numero de acciones
         quote,openMarket = self.getLastQuote(instrument_)
-        cantidad = int (((cash * 0.01)/quote))
+        cantidad = 1  #int (((1000)/quote))   # Invierto 1000$
         
         if ((cash *0.015) < (SL*cantidad)):
             #return -3
             pass
         
-        if (cash < 0):  #No tengo pasta para comprar
-            return -99
+
         
         #if((TP*100/quote)<6):   # beneficio menor que el 6%
         #    return -4
         #esto lo controlo con el valor 'expectancy' del Backtesting
         
         ################### PAra probar la estrategia compro solo 1, si no estoy dentro
-        cantidad =1
+        #cantidad =1
         
         
         return cantidad
@@ -583,8 +583,9 @@ class tradeAPIClass:
         
         print (position.head())
         fechaFin_ = dt.datetime.today() 
+        fechaFin_str = fechaFin_.strftime('%Y-%m-%d')
         
-        self.getExcelOrders(startDate= '2020-01-01', endDate='2024-12-30', cuenta=cuenta ) #endDate= fechaFin_)    
+        self.getExcelOrders(startDate= '2020-01-01', endDate= fechaFin_str, cuenta=cuenta ) #endDate= fechaFin_)    
         return
 
     
