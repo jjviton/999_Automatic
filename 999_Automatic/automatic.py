@@ -55,7 +55,7 @@ from datetime import datetime
 
 
 import sys
-sys.path.insert(0,"C:\\Users\\INNOVACION\\Documents\\J3\\100.- cursos\\Quant_udemy\\programas\\Projects\\libreria")
+sys.path.insert(0, "C:\\Users\\jjjimenez\\Documents\\quant\\libreria")
 
 #Mis import
 import quant_j3_lib as quant_j
@@ -117,15 +117,20 @@ class tradeAPIClass:
         elif (para2== 32):   
             import configALBA
             config=configALBA
-        
-        
+    
         self.configurarCuenta(cuentaID=para2)
             
         self.client = TradingClient(config.API_KEY, config.SECRET_KEY, paper=True)
-        account = dict(self.client.get_account())
-        for k,v in account.items():
-            print(f"{k:30}{v}")
-            
+        account = self.client.get_account()
+        # Imprimir atributos específicos del objeto Account
+        print(f"{'ID de la cuenta:':30}{account.id}")
+        print(f"{'Estatus de la cuenta:':30}{account.status}")
+        print(f"{'Poder adquisitivo:':30}{account.buying_power}")
+        print(f"{'Saldo en efectivo:':30}{account.cash}")
+        print(f"{'Divisa:':30}{account.currency}")
+        print(f"{'Equidad:':30}{account.equity}")
+        print(f"{'Última actualización:':30}{account.last_equity}")
+        
         self.dataLog = StockHistoricalDataClient(config.API_KEY, config.SECRET_KEY)  
         self.cartera202301=pd.DataFrame()
         
