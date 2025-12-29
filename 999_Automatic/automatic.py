@@ -114,6 +114,9 @@ class tradeAPIClass:
         if (para2 == 00):
             import config_segunda_J3
             config=config_segunda_J3
+        if (para2 == CUENTA_J3_02):
+            import config_primera_J3
+            config=config_primera_J3            
         elif (para2== 32):   
             import configALBA
             config=configALBA
@@ -135,6 +138,7 @@ class tradeAPIClass:
         self.cartera202301=pd.DataFrame()
         
         #creamos la cartera si no existe
+        """
         import os
         name = 'cartera01'
         file_path ="../reports/Cartera/"+name+".xlsx"
@@ -145,7 +149,7 @@ class tradeAPIClass:
         else:
             print("El archivo no existe.")
             #self.crearCartera(name)   
-        
+        """
         self.senalBeep()
         
         #activarlog()
@@ -162,6 +166,9 @@ class tradeAPIClass:
         if (cuentaID == CUENTA_J3_01):
             import config_segunda_J3
             config=config_segunda_J3
+        if (para2 == CUENTA_J3_02):
+            import config_primera_J3
+            config=config_primera_J3              
         elif (cuentaID == CUENTA_ALBA_01):   
             import configALBA
             config=configALBA
@@ -296,6 +303,58 @@ class tradeAPIClass:
         except:
             return (0)
         return int(position.qty)
+    
+    
+    def placeOrderSell(self, symbol='AAPL', quantity=1):
+        """
+        Envía una orden de venta a mercado para el símbolo dado.
+        Cancela previamente órdenes abiertas relacionadas con el mismo activo.
+        """
+        import logging
+        from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
+        from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
+    
+        try:
+            # 1️⃣ Cancelar órdenes abiertas del símbolo
+            order_filter = GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[symbol])
+            orders = self.client.get_orders(order_filter)
+            for order in orders:
+                try:
+                    self.client.cancel_order_by_id(order.id)
+                    logging.info(f"Cancelada orden abierta {order.id} ({symbol}).")
+                except Exception as e:
+                    logging.warning(f"No se pudo cancelar {order.id} ({symbol}): {e}")
+    
+            # 2️⃣ Comprobar si hay posición abierta
+            try:
+                position = self.client.get_open_position(symbol)
+                if float(position.qty) <= 0:
+                    logging.info(f"No hay posición larga en {symbol}, no se ejecuta venta.")
+                    return None
+            except Exception:
+                logging.info(f"No hay posición abierta en {symbol}.")
+                return None
+    
+            # 3️⃣ Crear y enviar la orden de venta
+            order_details = MarketOrderRequest(
+                symbol=symbol,
+                qty=quantity,
+                side=OrderSide.SELL,
+                time_in_force=TimeInForce.GTC
+            )
+            order = self.client.submit_order(order_data=order_details)
+            logging.info(f"Orden SELL enviada para {symbol} x {quantity}")
+    
+            # 4️⃣ Señal auditiva opcional
+            self.senalBeep()
+    
+            return order
+    
+        except Exception as e:
+            logging.error(f"Error en placeOrderSell para {symbol}: {e}")
+            return None
+
+
 
 
     def moneyManag(self,instrument_, TP, SL):
